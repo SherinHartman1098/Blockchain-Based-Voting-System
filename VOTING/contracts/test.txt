@@ -1,0 +1,109 @@
+// // SPDX-License-Identifier: MIT
+// /**
+//  * @title Storage
+//  * @dev Store & retrieve value in a variable
+//  * @custom:dev-run-script ./scripts/deploy.ts
+//  */
+// pragma solidity ^0.8.0; //version of the solidity
+
+// contract Voting{
+
+//     struct Candidate{ //defining candidates
+//         string name;
+//         uint256 voteCount; //candidate has a name & vote count
+//         string photo; // Stores photo URL (uploaded externally)
+//         uint256 age;
+//         string country;
+//         string gender;
+        
+//     }
+
+//     Candidate[] public candidates;
+//     address public owner; // owner of the smart contract
+//     mapping(address => bool) public voters; // which address has already voted. keeping track of voter if voted or not
+
+//     uint256 public votingStart; //start time of voting
+//     uint256 public votingEnd;//end time of voting
+
+// //Creating a constructor to initialize candidates and voting duration
+//     constructor(Candidate[] memory _candidates, uint256 _durationInMinutes){ //It is an array taking candidateNames and the amount of time to keep voting open.
+//         owner= msg.sender;
+//         votingStart=block.timestamp; //start time of vote time
+//         votingEnd=block.timestamp + (_durationInMinutes * 1 minutes); //End time of vote
+//        for (uint256 i = 0; i < _candidates.length; i++) {
+//             require(bytes(_candidates[i].name).length > 0, "Name cannot be empty.");
+//             require(_candidates[i].age >= 18, "Candidate must be at least 18 years old.");
+//             candidates.push(Candidate({
+//                 name: _candidates[i].name,
+//                 photo: _candidates[i].photo,
+//                 age: _candidates[i].age,
+//                 country: _candidates[i].country,
+//                 gender: _candidates[i].gender,
+//                 voteCount: 0
+//             }));
+//         }
+       
+//     }
+
+//     //create a modifier
+//     modifier onlyOwner{
+//         require(msg.sender==owner);//only owner can run the require function
+//     _;
+//     }
+
+//     // //function to add candidate
+//     // function addCandidate(string memory _name) public onlyOwner{ //only owner can add candidate (onlyOwner will call the function)
+//     //     candidates.push(Candidate({
+//     //         name: _name,
+//     //         voteCount:0
+//     //     }));
+//     // }
+//        // Function to add a new candidate by the admin
+//     function addCandidate(
+//         string memory _name,
+//         string memory _photo,
+//         uint256 _age,
+//         string memory _country,
+//         string memory _gender
+//     ) public onlyOwner {
+//         require(bytes(_name).length > 0, "Name cannot be empty.");
+//         require(_age >= 18, "Candidate must be at least 18 years old.");
+        
+//         candidates.push(Candidate({
+//             name: _name,
+//             photo: _photo,
+//             age: _age,
+//             country: _country,
+//             gender: _gender,
+//             voteCount: 0
+//         }));
+//     }
+
+//     //Function for vote where we are currently giving the index of the candidate
+//     function vote(uint256 _candidateIndex) public {   // any person with the metamask address can call this function and vote
+//     require(!voters[msg.sender], "You have already voted!!"); //checking if the voters have already voted
+//     require(_candidateIndex <candidates.length, "Invalid Candidate index"); // checking if the candidate index is right
+
+//     candidates[_candidateIndex].voteCount++; //increase the vote count by 1
+//     voters[msg.sender]=true; // particular voter is set visited. cannot vote next time
+//     }
+
+//     //function for retreiving all votes and the names 
+//     function getAllVotesOfCandidates() public view returns(Candidate[] memory){  //returns the struct array
+//         return candidates; //table 
+//     }
+
+//     //function for retrieving the status of the voting
+//     function getVotingStatus() public view returns(bool){
+//         return(block.timestamp>=votingStart && block.timestamp<votingEnd);
+//     }
+    
+//     //function for displaying the time remaining for voting
+//     function getRemainingTime() public view returns(uint256){
+//         require(block.timestamp>=votingStart,"Voting has not started yet!");
+//         if(block.timestamp>=votingEnd){
+//             return 0;
+//         }
+//         return votingEnd - block.timestamp;
+//     }
+// }

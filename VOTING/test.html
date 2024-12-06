@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.1/dist/ethers.umd.min.js" type="application/javascript"></script>
+    
+    <style>
+        /* General Reset */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar navigation styles */
+        .navbar {
+            width: 250px;
+            background-color: #333;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            height: 100%;
+            left: -250px; /* Hidden by default */
+            transition: left 0.3s ease;
+        }
+
+        .navbar a {
+            text-decoration: none;
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            display: block;
+            border-bottom: 1px solid #444;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #4CAF50;
+        }
+
+        .navbar .logout {
+            margin-top: auto;
+            background-color: #f44336;
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            transition: background-color 0.3s;
+        }
+
+        .navbar .logout:hover {
+            background-color: #d32f2f;
+        }
+
+        /* Hamburger menu icon */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        /* Main content area */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            margin-left: 0; /* Full-width content by default */
+            transition: margin-left 0.3s ease;
+        }
+
+        .header {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        /* Classes for showing/hiding the sidebar */
+        .navbar.open {
+            left: 0;
+        }
+
+        .main-content.open {
+            margin-left: 250px;
+        }
+
+        /* Candidate Cards Container */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* Candidate Card Styles */
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            font-size: 18px;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: #777;
+            margin: 0;
+        }
+
+        /* Button and form styles */
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #3e8e41;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar {
+                width: 200px;
+            }
+
+            .navbar a {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hamburger Icon -->
+    <div class="hamburger-menu" id="hamburger-menu">&#9776;</div>
+
+    <!-- Sidebar -->
+    <div class="navbar" id="sidebar">
+        <a href="/Home.html">Vote</a>
+        <a href="/ListVoters.html">Admin</a>
+        <!-- Logout Button -->
+        <button class="logout" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content" id="main-content">
+        <div class="header">Welcome to the Decentralized Voting Application</div>
+       
+        <!-- Voting Status Section -->
+        <div class="container">
+            <button class="top-right-button" onclick="voteStatus()">View Status</button>
+            <p class="status" id="status"></p>
+            <p class="status" id="time"></p>
+        </div>
+
+        <!-- Candidate Cards Section -->
+        <div class="cards-container" id="candidateCards">
+            <!-- Dynamic Cards will be added here -->
+        </div>
+    </div>
+
+    <script>
+        // Sidebar toggle logic
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+
+        hamburgerMenu.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            mainContent.classList.toggle('open');
+        });
+
+       
+    </script>
+</body>
+</html>

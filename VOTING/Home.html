@@ -1,0 +1,262 @@
+<!-- //Index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- <title>Decentralized Voting Application</title> -->
+    <script src="main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.1/dist/ethers.umd.min.js" type="application/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* General Reset */
+        /*body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }*/
+ /* Logout button styles */
+		  /*.navbar .logout {
+            margin-top: auto;
+            background-color: #f44336;
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            transition: background-color 0.3s;
+        }*/
+        /* Active menu item styles */
+        /*.navbar a.active {
+            background-color: #4CAF50; /* Highlight color 
+            color: white; /* Text color when active */
+        /*}
+        .navbar .logout:hover {
+            background-color: #d32f2f;
+        }*/
+
+        /* Sidebar navigation styles */
+        /*.navbar {
+            width: 250px;
+            background-color: #323e46;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar a {
+            text-decoration: none;
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            display: block;
+            border-bottom: 1px solid #444;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #4CAF50;
+        }*/
+
+        /* Main content area */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            margin-top: 0px !important;
+        }
+
+        .header {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        /* Candidate Cards Container */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* Candidate Card Styles */
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            font-size: 18px;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: #777;
+            margin: 0;
+        }
+        button.vote-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #326b7c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button.vote-btn:hover {
+            background-color: #536875;
+        }
+        /* Button and form styles */
+       /* button {
+            background-color: #326b7c;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #536875;
+        }*/
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .status {
+            font-size: 16px;
+            margin-top: 10px;
+            color: #fff;
+            padding-top:30px;
+        }
+        /* Button positioned at the top-right corner */
+        .top-right-button {
+            position: relative;
+            top: 20px;
+            background-color: #326b7c;
+            color: white;
+            padding: 10px 5px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, transform 0.3s;
+        }
+  
+        .top-right-button:hover {
+            background-color: #536875;
+            transform: scale(1.1);
+        }
+  
+
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar {
+                width: 200px;
+            }
+
+            .navbar a {
+                font-size: 16px;
+            }
+            .top-right-button {
+                padding: 10px 20px;
+                font-size: 14px;
+              }
+        }
+    </style>
+</head>
+<body>
+    <!-- Vertical Navbar -->
+    <div class="navbar">
+        <div class="nav-links">
+        <a href="/Home.html">Vote</a>
+        <a href="/adminPage.html">Admin</a>
+        </div>
+        <!-- Logout Button -->
+        <button class="logout" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="header" style="font-size:xx-large;">Go ahead and make your vote count!</div>
+       
+         <!-- Voting Status Section -->
+         <div class="container">
+            <!-- <h2>Check Voting Status</h2> -->
+            <button class="top-right-button" onclick="voteStatus()">View Status</button>
+            <p class="status" id="status"></p>
+            <p class="status" id="time"></p>
+        </div>
+
+        <!-- Candidate Cards Section -->
+        <div class="cards-container" id="candidateCards">
+            <!-- Dynamic Cards will be added here -->
+        </div>
+        
+        <!-- Connect Metamask Section
+        <div class="container">
+            <button onclick="connectMetamask()">Connect Metamask</button>
+            <p class="status" id="metamasknotification"></p>
+        </div> -->
+
+        <!-- Voting Section -->
+        <!-- <div class="container">
+            <h2>Cast Your Vote</h2>
+            <input type="number" id="vote" placeholder="Enter Voter Index...">
+            <button onclick="addVote()">Submit Vote</button>
+            <p class="status" id="cand"></p>
+        </div> -->
+
+       
+    </div>
+</body>
+</html>
+
