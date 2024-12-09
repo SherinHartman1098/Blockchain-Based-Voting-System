@@ -9,7 +9,12 @@ body {
     height: 100vh;
     overflow: hidden;
 }
-
+.header {
+    text-align: left;
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
 
 /* Horizontal Navbar Styles */
 .navbar {
@@ -24,6 +29,8 @@ body {
     position: fixed;
     top: 0;
     z-index: 1000;
+    margin-bottom: 0; /* Reduce or remove space below the navbar */
+    padding-bottom: 0;
 }
 /* Navigation Links Container */
 .nav-links {
@@ -165,6 +172,7 @@ button:hover {
     .navbar a {
         font-size: 16px;
         padding: 8px 12px;
+        
     }
 
     .navbar .logout {
@@ -205,6 +213,26 @@ button:hover {
 .container {
     max-width: 500px; /* Reduce the container width */
     padding: 10px; /* Adjust padding for compact look */
+}
+
+.container-row {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px; /* Reduce the space above the container row */
+    padding-top: 0; /* Optional, to remove padding if present */
+}
+.candidateHeader{
+    font-size: xx-large;
+    text-align: center;
+}
+.candidate-form {
+    flex: 1;
+    background-color: #3a4649;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: left;
+    margin: -5%;
+    margin-left: 0%;
 }
 form {
     display: flex;
@@ -250,7 +278,94 @@ input[type="submit"]:hover {
 }
 
 .listCandidates{
-    padding-top:100px;
+    padding-top:10px;
     text-align: center;
+    padding-left: 20%;
 
+}
+
+/* Admin Buttons in Navbar */
+.admin-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-button {
+    background-color: #326b7c;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.nav-button:hover {
+    background-color: #536875;
+}
+input#submitButton{
+    background-color: #326b7d;
+    padding: 10px 10px;
+}
+
+input#submitButton:hover {
+    background-color: #536875;
+}
+
+.listCandidates {
+    flex: 1.5;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.listCandidates button {
+    align-self: flex-start;
+    padding: 10px 20px;
+    background-color: #326b7d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 25%;
+}
+
+.listCandidates button:hover {
+    background-color: #536875;
+}
+
+.listCandidates table {
+    margin-top: 10px;
+}
+dialog{
+    width: 40%;
+gap: 0!important;
+    text-align: left;
+    background-color: #434647;
+}
+
+
+.end-vote-container {
+    display: flex;
+    justify-content: flex-end; /* Aligns the button to the right */
+    margin-bottom: 10px; /* Adds spacing between the button and the candidate list */
+}
+
+#endVoteButton {
+    background-color: #e63946;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: -15%;
+    margin-top: -15%;
+}
+
+#endVoteButton:hover {
+    background-color: #d62828;
 }

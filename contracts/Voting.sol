@@ -14,18 +14,18 @@ contract Voting {
     }
 
     Candidate[] public candidates;
-    address public immutable admin;
+    address public immutable owner;
     uint256 public immutable votingStart;
     uint256 public votingEnd;
 
-    mapping(address => bool) public voters;                                                     
+    mapping(address => bool) public voters;
 
     event CandidateAdded(string name, uint256 age);
     event Voted(address voter, uint256 candidateIndex);
     event VotingEnded(uint256 timestamp);
 
-    modifier onlyAdmin {
-        require(msg.sender == admin, "Not authorized");
+    modifier onlyOwner {
+        require(msg.sender == owner, "Not authorized");
         _;
     }
 
@@ -35,11 +35,10 @@ contract Voting {
         uint256[] memory _ages,
         string[] memory _countries,
         string[] memory _genders,
-        uint256 _durationInMinutes,  
-        address _admin) {
+        uint256 _durationInMinutes
+    ) {
         require(_names.length == _photos.length && _names.length == _ages.length && _names.length == _countries.length && _names.length == _genders.length, "Input arrays length mismatch");
-        //admin = msg.sender;
-        admin=_admin;
+        owner = msg.sender;
         votingStart = block.timestamp;
         votingEnd = block.timestamp + (_durationInMinutes * 1 minutes);
 
@@ -60,7 +59,7 @@ contract Voting {
         }
     }
 
-    function addCandidate(string memory _name, string memory _photo, uint256 _age, string memory _country, string memory _gender) public onlyAdmin() {
+    function addCandidate(string memory _name, string memory _photo, uint256 _age, string memory _country, string memory _gender) public onlyOwner {
         require(bytes(_name).length > 0, "Name cannot be empty");
         require(_age >= 18, "Candidate must be at least 18 years old");
 
@@ -110,60 +109,9 @@ contract Voting {
         return votingEnd - block.timestamp;
     }
 
-    function endVoting() public onlyAdmin() {
+    function endVoting() public onlyOwner {
         require(block.timestamp < votingEnd, "Voting already ended");
         votingEnd = block.timestamp;
         emit VotingEnded(block.timestamp);
     }
-    // Update Candidate
-function updateCandidate(uint candidateId, string memory newName, string memory newPhoto, uint newAge, string memory newCountry, string memory newGender) public onlyAdmin() {
-    require(candidateId < candidates.length, "Invalid Candidate ID");
-    Candidate storage candidate = candidates[candidateId];
-    candidate.name = newName;
-    candidate.photo = newPhoto; // Assuming IPFS hash
-    candidate.age = newAge;
-    candidate.country = newCountry;
-    candidate.gender = newGender;
-}
-
-// Delete Candidate
-function deleteCandidate(uint candidateId) public onlyAdmin() {
-    require(candidateId < candidates.length, "Invalid Candidate ID");
-    candidates[candidateId] = candidates[candidates.length - 1]; // Replace with last candidate
-    candidates.pop(); // Remove last candidate
-}
-
-
-//Declaring Winner
-event WinnerDeclared(string winnerName, uint256 votes);
-function declareWinner() public returns (string memory winnerName) {
-    require(block.timestamp >= votingEnd, "Voting has not ended yet");
-
-    uint256 highestVotes = 0;
-    uint256[] memory tiedIndexes = new uint256[](candidates.length);
-    uint256 tieCount = 0;
-
-    // Determine the highest vote count and collect tied candidates
-    for (uint256 i = 0; i < candidates.length; i++) {
-        if (candidates[i].voteCount > highestVotes) {
-            highestVotes = candidates[i].voteCount;
-            tieCount = 0; // Reset tie count
-            tiedIndexes[tieCount] = i;
-            tieCount++;
-        } else if (candidates[i].voteCount == highestVotes) {
-            tiedIndexes[tieCount] = i;
-            tieCount++;
-        }
-    }
-
-    // Handle tie
-    if (tieCount > 1) {
-        uint256 randomIndex = uint256(keccak256(abi.encodePacked(blockhash(block.number - 1), block.timestamp))) % tieCount;
-        winnerName = candidates[tiedIndexes[randomIndex]].name;
-    } else {
-        winnerName = candidates[tiedIndexes[0]].name;
-    }
-
-    emit WinnerDeclared(winnerName, highestVotes); // Emit event with winner
-}
 }

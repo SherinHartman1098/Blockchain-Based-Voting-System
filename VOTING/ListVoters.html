@@ -6,13 +6,13 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.1/dist/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-	<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
     <!-- Then load your main.js script -->
     <script src="main.js"></script>
-	
+
     <style>
         /* General Reset */
-        body {
+       /* body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -21,83 +21,19 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
-        }
-		 /* Logout button styles */
-		 /*.navbar .logout {
-            margin-top: auto;
-            background-color: #f44336;
-            color: white;
-            padding: 12px 20px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            transition: background-color 0.3s;
-        }*/
-		
-        /*.navbar a.active {
-            background-color: #4CAF50; 
-            color: white; 
-        }*/
-        /*.navbar .logout:hover {
-            background-color: #d32f2f;
         }*/
 
-        /* Sidebar navigation styles */
-       /* .navbar {
-            width: 250px;
-            background-color: #333;
-            display: flex;
-            flex-direction: column;
-            padding-top: 20px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-        }*/
-
-       /* .navbar a {
-            text-decoration: none;
-            color: white;
-            padding: 15px 20px;
-            font-size: 18px;
-            display: block;
-            border-bottom: 1px solid #444;
-            transition: background-color 0.3s;
-        }*/
-
-        /*.navbar a:hover {
-            background-color: #4CAF50;
-        }
-
-        /* Main content area */
-        .main-content {
+      /*  .main-content {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
         }
 
         .header {
-            text-align: center;
+            text-align: left;
             font-size: 24px;
             margin-bottom: 20px;
             font-weight: bold;
-        }
-
-        /* Button and form styles */
-       /* button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 10px;
-            width: 100%;
-        }*/
-
-        /*button:hover {
-            background-color: #3e8e41;
         }*/
 
         input[type="text"], input[type="number"], input[type="submit"] {
@@ -114,7 +50,7 @@
             font-size: 16px;
             margin-top: 10px;
             color: #fff;
-			padding-top: 30px;
+            padding-top: 30px;
         }
 
         table {
@@ -127,161 +63,206 @@
             padding: 10px;
             text-align: center;
             border: 1px solid #ccc;
-			background-color: #2a3944;
+            background-color: #2a3944;
         }
 
         table th {
             background-color: #3a4649;
         }
 
+
+        
         /* Responsive Design */
         @media (max-width: 768px) {
-            .navbar {
-                width: 200px;
-            }
-
-            .navbar a {
-                font-size: 16px;
+            .container-row {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
+    <!-- Navbar -->
     <div class="navbar">
-		<div class="nav-links">
-        <a href="/Home.html">Vote</a>
-		<a href="/adminPage.html">Admin</a>
-		</div>
-		  <!-- Logout Button -->
-		  <button class="logout" onclick="logout()">Logout</button>
-   
+        <div class="nav-links">
+            <a href="/Home.html">Vote</a>
+            <a href="/adminPage.html">Admin</a>
+        </div>
+
+        <!-- Admin Action Buttons -->
+        <div class="admin-buttons">
+            <button class="nav-button" onclick="openUpdateDialog()">Update</button>
+            <button class="nav-button" onclick="openDeleteDialog()">Delete</button>
+        </div>
+
+        <!-- Logout Button -->
+        <button class="logout" onclick="logout()">Logout</button>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
-        
+        <div class="container-row">
+            <!-- Candidate Form -->
+            <div class="candidate-form">
+                <div class="header">Fill out the details of the candidate!</div>
+                <form id="candidateForm" style="width: 100%;" enctype="multipart/form-data">
+                    <!-- Name Field -->
+                    <div class="form-group" style="display: inline-block;">
+                        <label for="name">Name:</label>
+                        <input type="text" id="name" name="name" placeholder="Enter candidate's name" required>
+                    </div>
 
-        <!-- Add Candidate Form -->
-        <!-- <div class="container">
-            <h2>Add a Candidate</h2>
-            <form method="POST" action="/vote" enctype="multipart/form-data">
-                <input type="text" name="vote" placeholder="Add name of candidate..." required>
-                <input type="submit" value="Add Candidate">
-            </form>
-        </div> -->
-		<div class="container">
-			<!-- <h2>Fill out the details of the candidate!</h2> -->
-		<div class="header" style="font-size:xx-large;text-align:left">Fill out the details of the candidate!</div>
-		<form id="candidateForm" style="width: 100%;" enctype="multipart/form-data">
-            <!-- Name Field -->
-            <div class="form-group" style="display: inline-block;">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" placeholder="Enter candidate's name" required>
+                    <!-- Upload Photo Field -->
+                    <div class="form-group">
+                        <label for="photo">Upload Photo:</label>
+                        <input type="file" id="file" name="photo" accept="image/*" required>
+                    </div>
+
+                    <!-- Age Field -->
+                    <div class="form-group">
+                        <label for="age">Age:</label>
+                        <input type="number" id="age" name="age" placeholder="Enter candidate's age" min="18" required>
+                    </div>
+
+                    <!-- Country of Residence Field -->
+                    <div class="form-group">
+                        <label for="country">Country of Residence:</label>
+                        <input type="text" id="country" name="country" placeholder="Enter country of residence" required>
+                    </div>
+
+                    <!-- Gender Field -->
+                    <div class="form-group">
+                        <label for="gender">Gender:</label>
+                        <select id="gender" name="gender" required>
+                            <option value="" disabled selected>Select gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Non-Binary">Non-Binary</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <input class="submitButton" style="width: 50%; margin-left: 25%;" id="submitButton" type="button" onclick="addCandidate()" value="Add Candidate">
+                </form>
             </div>
-        
-            <!-- Upload Photo Field -->
-            <div class="form-group">
-                <label for="photo">Upload Photo:</label>
-                <input type="file" id="file" name="photo" accept="image/*" required>
+
+       
+            <!-- <div>
+                <button  id="endVoteButton" onclick="endVote()">End Voting</button>
+            </div> -->
+
+            <!-- List All Candidates -->
+            <div class="listCandidates">
+                 <!-- End Vote Button -->
+                 <div class="end-vote-container">
+                    <button id="endVoteButton" onclick="endVote()">End Voting</button>
+                </div>
+            
+                <div class="candidateHeader">Election Candidate Details!</div>
+                <button onclick="getAllCandidates()">List All Candidates</button>
+                <p class="status" id="p3"></p>
+
+                <!-- Candidate Table -->
+                <table id="myTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Candidate Name</th>
+                            <th>Votes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Table rows will be dynamically added here -->
+                    </tbody>
+                </table>
             </div>
-        
-            <!-- Age Field -->
-            <div class="form-group">
-                <label for="age">Age:</label>
-                <input type="number" id="age" name="age" placeholder="Enter candidate's age" min="18" required>
-            </div>
-        
-            <!-- Country of Residence Field -->
-            <div class="form-group">
-                <label for="country">Country of Residence:</label>
-                <input type="text" id="country" name="country" placeholder="Enter country of residence" required>
-            </div>
-        
-            <!-- Gender Field -->
-            <div class="form-group">
-                <label for="gender">Gender:</label>
-                <select id="gender" name="gender" required>
+        </div>
+    </div>
+
+    <!-- Update and Delete Dialogs -->
+        <dialog id="updateDialog">
+            <form style="gap: 0px;" id="updateForm">
+                <h2 style="color:#fff">Update Candidate</h2>
+                <!-- Candidate ID -->
+                <label for="updateId">Candidate ID:</label>
+                <input type="number" id="updateId" name="updateId" placeholder="Enter candidate ID" required>
+                
+                <!-- Name Field -->
+                <label for="updateName">Name:</label>
+                <input type="text" id="updateName" name="updateName" placeholder="Enter candidate's name" required>
+                
+                <!-- Photo Field -->
+                <label for="updatePhoto">Photo (IPFS Hash or Upload):</label>
+                <input type="text" id="updatePhoto" name="updatePhoto" placeholder="Enter photo hash (optional)">
+                
+                <!-- Age Field -->
+                <label for="updateAge">Age:</label>
+                <input type="number" id="updateAge" name="updateAge" placeholder="Enter candidate's age" required>
+                
+                <!-- Country of Residence Field -->
+                <label for="updateCountry">Country:</label>
+                <input type="text" id="updateCountry" name="updateCountry" placeholder="Enter country of residence" required>
+                
+                <!-- Gender Field -->
+                <label for="updateGender">Gender:</label>
+                <select id="updateGender" name="updateGender" required>
                     <option value="" disabled selected>Select gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Non-Binary">Non-Binary</option>
                     <option value="Other">Other</option>
                 </select>
-            </div>
-        
-            <!-- Submit Button -->
-            <input style="width: 50%;margin-left: 20%;" id="submitButton"  type="button" onclick="addCandidate()" value="Add Candidate">
-        </form>
-				<!-- Name Field -->
-				<!-- <div class="form-group" style="display: inline-block;">
-					<label for="name">Name:</label>
-					<input type="text" id="name" name="name" placeholder="Enter candidate's name" required>
-				</div> -->
-		
-				<!-- Upload Photo Field -->
-				<!-- <div class="form-group"> -->
-					<!-- <label for="photo">Upload Photo:</label>
-					<input type="file" id="file" name="photo" accept="image/*" required>
-				</div> -->
-		
-				<!-- Age Field -->
-				<!-- <div class="form-group"> -->
-					<!-- <label for="age">Age:</label>
-					<input type="number" id="age" name="age" placeholder="Enter candidate's age" min="18" required>
-				</div> -->
-		
-				<!-- Country of Residence Field -->
-				<!-- <div class="form-group"> -->
-					<!-- <label for="country">Country of Residence:</label>
-					<input type="text" id="country" name="country" placeholder="Enter country of residence" required>
-				</div> -->
-		
-				<!-- Gender Field -->
-				<!-- <div class="form-group"> -->
-					<!-- <label for="gender">Gender:</label>
-					<select id="gender" name="gender" required>
-						<option value="" disabled selected>Select gender</option>
-						<option value="Male">Male</option>
-						<option value="Female">Female</option>
-						<option value="Non-Binary">Non-Binary</option>
-						<option value="Other">Other</option>
-					</select>
-				</div> -->
-		
-				<!-- Submit Button -->
-				<!-- <input style="width: 50%;margin-left: 20%;"type="button" onclick="addCandidate()" value="Add Candidate"> -->
-			<!-- </div> -->
-        <!-- </form> -->
-		</div>
+            
+                <div style="margin-top: 20px;">
+                    <button type="button" style="margin-left: 25%;" onclick="updateCandidate()">Save</button>
+                    <button type="button" style="margin-left: 25%;" onclick="closeUpdateDialog()">Cancel</button>
+                </div>
+            </form>
+        </dialog>   
+ 
 
-        <!-- Voting Status -->
-        <div>
-            <p class="status" id="votingStatus"></p>
-        </div>
-
-        <!-- List All Candidates -->
-        
-        <div class="listCandidates">
-            <button onclick="getAllCandidates()">List All Candidates</button>
-            <p class="status" id="p3"></p>
-        <!-- </div> -->
-
-        <!-- Candidate Table -->
-        <!-- <div> -->
-            <table id="myTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Candidate Name</th>
-                        <th>Votes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Table rows will be dynamically added here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
+        <dialog id="deleteDialog">
+            <h2  style="color:#fff">Delete Candidate</h2>
+            <form id="deleteForm">
+                <!-- Candidate ID -->
+                <label for="deleteId">Candidate ID:</label>
+                <input type="number" id="deleteId" name="deleteId" placeholder="Enter candidate ID" required>
+                
+                <!-- Candidate Name -->
+                <label for="deleteName">Candidate Name:</label>
+                <input type="text" id="deleteName" name="deleteName" placeholder="Enter candidate name" required>
+                
+                <!-- Buttons -->
+                <div style="margin-top: 20px;">
+                    <button type="button" style="margin-left: 25%;" onclick="deleteCandidate()">Delete</button>
+                    <button type="button" style="margin-left: 25%;" onclick="closeDeleteDialog()">Cancel</button>
+                </div>
+            </form>
+        </dialog>
 </body>
 </html>
+
+<script>
+ //update and delete dialogues and functions
+// Open and Close Update Dialog
+function openUpdateDialog() {
+    const updateDialog = document.getElementById('updateDialog');
+    updateDialog.showModal();
+  }
+  
+  function closeUpdateDialog() {
+    const updateDialog = document.getElementById('updateDialog');
+    updateDialog.close();
+  }
+  
+  // Open and Close Delete Dialog
+  function openDeleteDialog() {
+    const deleteDialog = document.getElementById('deleteDialog');
+    deleteDialog.showModal();
+  }
+  
+  function closeDeleteDialog() {
+    const deleteDialog = document.getElementById('deleteDialog');
+    deleteDialog.close();
+  }
+</script>
