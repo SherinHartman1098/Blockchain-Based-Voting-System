@@ -62,20 +62,28 @@ const fetchAndStoreContractAddress = async () => {
         console.log("User is a voter");
         setTimeout(() => {
           window.location.href = "/Home.html";
-        }, 1000);
+        }, 2000);
+       
+         
+        
         //return false;
     }
 }
 
 async function configureUI() {
-  const isAdmin = await checkIfAdmin();
-
-  if (isAdmin) {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
+        const contractEligible = await contractInstance.getRemainingTime();
+        if (contractEligible.toNumber() != 0) {
       // Show admin-only buttons
-      document.getElementById('adminPanel').style.display = 'block';
+      document.getElementById('submitButton').disabled=true;
+      document.getElementById('update').disabled=true;
+      document.getElementById('delete').disabled=true;
   } else {
       // Hide admin-only buttons
-      document.getElementById('adminPanel').style.display = 'none';
+      document.getElementById('vote').style.display = 'none';
   }
 }
 
@@ -97,7 +105,7 @@ async function configureUI() {
         
         await checkIfAdmin();
         // setTimeout(() => {
-        //   window.location.href = "/Home.html";
+        //   displayCandidates();
         // }, 1000);
       } else {
         showToast("MetaMask is not installed. Please install it to proceed.", "error");// Notify the user that MetaMask is not installed
@@ -281,7 +289,7 @@ window.onload = function() {
   setActiveMenuItem();
   getContractAbi();
   fetchAndStoreContractAddress();
-  displayCandidates();
+   displayCandidates();
 }
 
 const showToast = (message, type) => {
