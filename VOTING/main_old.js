@@ -1,7 +1,10 @@
 // Frontend (main.js)
 
+
+//const axios = require('axios');// IPFS to upload files
 var  WALLET_CONNECTED=localStorage.getItem("Wallet_Connected");
 var contractAddress = localStorage.getItem('contractAddress');
+var adminContractAddress=localStorage.getItem('adminContractAddress');
 var contractAbi="";
 var candidateIdPhoto = [
   { id:0,photo: "https://via.placeholder.com/100" },
@@ -10,6 +13,8 @@ var candidateIdPhoto = [
   {id:3,photo: "https://via.placeholder.com/100" },
 ];
 var card="";
+const pinataApiKey="";
+const pinataApiSecret="";
 //     console.log('Contract ABI:', config.abi);
 
 //     const config = await response.json();
@@ -19,18 +24,17 @@ const fetchAndStoreContractAddress = async () => {
       const response = await fetch('http://localhost:3000/getContractAddress');
       const data = await response.json();
       const contractAddress = data.contractAddress;
-
-     
-      
+      const adminContractAddress=data.adminContractAddress;
       // Store the contract address in localStorage
       localStorage.setItem('contractAddress', contractAddress);
-  
+      localStorage.setItem('adminContractAddress',adminContractAddress);
       console.log('Contract Address stored in localStorage:', contractAddress);
     } catch (error) {
       console.error('Error fetching contract address:', error);
     }
 
   };
+
   
   // Fetch the contract address from localStorage
   const getContractAbi =async () => {
@@ -39,9 +43,62 @@ const fetchAndStoreContractAddress = async () => {
     contractAbi=config.abi;
   };
   
+  async function checkIfAdmin() {
+    try {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+
+    const userAddress = await signer.getAddress();
+    console.log('Connected address:', userAddress);
+
+    // Fetch the admin address from the contract
+    const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
+    const adminAddress = await contractInstance.admin();
+
+    if (userAddress.toLowerCase() === adminAddress.toLowerCase()) {
+        console.log("User is the admin");
+        setTimeout(() => {
+          window.location.href = "/adminPage.html";
+        }, 1000);
+        //return true;
+      
+    } else {
+        console.log("User is a voter");
+        setTimeout(() => {
+          window.location.href = "/Home.html";
+        }, 2000);
+       
+         
+        
+        //return false;
+    }
+  }catch(error){
+    console.log(error);
+  }
+}
+
+async function configureUI() {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
+        const contractEligible = await contractInstance.getRemainingTime();
+        if (contractEligible.toNumber() != 0) {
+      // Show admin-only buttons
+      document.getElementById('submitButton').disabled=true;
+      document.getElementById('update').disabled=true;
+      document.getElementById('delete').disabled=true;
+  } else {
+      // Hide admin-only buttons
+      document.getElementById('vote').style.display = 'none';
+  }
+}
+
+
   //Connect to local mask
   const connectMetamask = async () => {
    
+
     try {
       if (typeof window.ethereum !== 'undefined') {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -50,37 +107,30 @@ const fetchAndStoreContractAddress = async () => {
         WALLET_CONNECTED = await signer.getAddress();
         localStorage.setItem("Wallet_Connected",WALLET_CONNECTED);
         var element = document.getElementById("metamasknotification");
-        //element.innerHTML = "Meta Mask is Connected: " + WALLET_CONNECTED;
         showToast("Meta Mask is Connected: " + WALLET_CONNECTED, "success");
-     document.getElementById('metamasknotification').innerText = "MetaMask connected successfully!";
+        document.getElementById('metamasknotification').innerText = "MetaMask connected successfully!";
         
-        // Redirect to Home.html after 1 second (optional delay for UX)
-        setTimeout(() => {
-          window.location.href = "/Home.html";
-        }, 1000);
+        await checkIfAdmin();
+        // setTimeout(() => {
+        //   displayCandidates();
+        // }, 1000);
       } else {
-        // Notify the user that MetaMask is not installed
-        document.getElementById('metamasknotification').innerText = "MetaMask is not installed. Please install it to proceed.";
+        showToast("MetaMask is not installed. Please install it to proceed.", "error");// Notify the user that MetaMask is not installed
       }
     } catch (error) {
-      // Handle errors (e.g., user denied connection)
-      document.getElementById('metamasknotification').innerText = "Failed to connect to MetaMask. Please try again.";
-      console.error(error);
+       showToast("Failed to connect to MetaMask. Please try again.", "error");// Handle errors (e.g., user denied connection)
     }
-    // const provider = new ethers.providers.Web3Provider(window.ethereum);
-    // await provider.send("eth_requestAccounts", []);
-    // const signer = provider.getSigner();
-    // WALLET_CONNECTED = await signer.getAddress();
-    // var element = document.getElementById("metamasknotification");
-    // element.innerHTML = "Meta Mask is Connected: " + WALLET_CONNECTED;
+    
   };
   
-  const addVote = async (selectedName) => {
+  //Function to add Vote
+  const addVote = async (index) => {
+    try{
     if (WALLET_CONNECTED != 0) {
         // Retrieve the name based on the selected candidate ID
        
 
-        //const candidateName = selectedName; // Assuming the name is stored in `candidateData.name`
+        const candidateName = index; // Assuming the name is stored in `candidateData.name`
 
         // Ethereum and smart contract interaction
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -88,15 +138,15 @@ const fetchAndStoreContractAddress = async () => {
         const signer = provider.getSigner();
         const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
         const contractEligible = await contractInstance.getRemainingTime();
-        var cand = document.getElementById("cand");
+        //var cand = document.getElementById("cand");
 
         console.log("Remaining time:", contractEligible);
 
         if (contractEligible.toNumber() != 0) {
             
-            showToast("Please wait, adding a vote in the smart contract", "info");
+            showToast("Please wait as your votes are valuable to us!", "info");
             // Pass the candidate name to the smart contract's vote function
-            const tx = await contractInstance.vote(candidateName);
+            const tx = await contractInstance.vote(index);
             await tx.wait();
             
             showToast("Vote added successfully!", "success");
@@ -105,9 +155,20 @@ const fetchAndStoreContractAddress = async () => {
             showToast("Vote cannot be casted as the voting lines are closed.", "error");
         }
     } else {
-        var cand = document.getElementById("cand");
+        //var cand = document.getElementById("cand");
         showToast("Please connect Metamask first.", "error");
     }
+  }catch(error){
+    if (error.data && error.data.message) {
+      console.error("Revert reason:", error.data.message);
+      showToast("You have already voted. Thank you!","error");
+    }
+   else {
+      console.error("Unhandled error:", error);
+      
+  }
+  }
+
 };
 
 const voteStatus = async() => {
@@ -123,6 +184,10 @@ const voteStatus = async() => {
         console.log(time);
         status.innerHTML = currentStatus == 1 ? "Voting is currently open" : "Voting is finished";
         remainingTime.innerHTML = `Remaining time is ${parseInt(time, 16)} seconds`;
+        if(currentStatus!=1 && time.toNumber()==0){
+         await getWinner();
+         
+        }
     }
     else {
         var status = document.getElementById("status");
@@ -131,95 +196,66 @@ const voteStatus = async() => {
     }
 }
 
-// const displayCandidates = async()=>{
+const displayCandidates = async()=>{
   
-//   if(WALLET_CONNECTED != 0) {
-//   //Displaying the details of the voters in the card
-//   const container = document.getElementById("candidateCards");
-//   const provider = new ethers.providers.Web3Provider(window.ethereum);
-//   await provider.send("eth_requestAccounts", []);
-//   const signer = provider.getSigner();
-//   const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
-//   var candidates = await contractInstance.getCandidate();
-
- 
-//       candidates.forEach((candidate,index) => {
-//         const photoData = candidateIdPhoto.find(photo => photo.id === index);
-//         if(photoData){
-//     card = document.createElement("div");
-//     card.classList.add("card");
-//     card.setAttribute("data_id", photoData.id);
-//     card.setAttribute("data_name", candidate.name);
+  if(WALLET_CONNECTED != 0) {
     
-//     card.innerHTML = `
-//         <img src="${photoData.photo}" alt="${candidate.name}">
-//         <h3>${candidate.name}</h3>
-//         <p>ID: ${photoData.id}</p>
-//         <button class="vote-btn" id="voteButton" onclick="addVote('${candidate.name}')">Vote</button>
-//     `;
-//     container.appendChild(card);
-//         }
-//     });
+  //Displaying the details of the voters in the card
+  const container = document.getElementById("candidateCards");
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
+  const signer = provider.getSigner();
+  const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
+  var candidates = await contractInstance.getAllCandidates();
+
+      candidates.forEach((candidate,index) => {
+        const photoHash = candidates[index]['photo'];
+        if(photoHash){
+           // Construct IPFS URL
+           const photoUrl = `https://ipfs.io/ipfs/${photoHash}`;
+    card = document.createElement("div");
+    // card.classList.add("card");
+    // card.setAttribute("data_id", photoData.id);
+    // card.setAttribute("data_name", candidate.name);
+    
+    card.innerHTML = `
+        <img src="${photoUrl}" alt="${candidate.name}">
+        <h3>${candidate.name}</h3>
+        <p>ID: ${index}</p>
+        <button class="vote-btn" id="voteButton" onclick="addVote('${index}')">Vote</button>
+    `;
+    container.appendChild(card);
+        }
+    });
  
-//   }
-//   else {
-//    showToast("Not Connected to Metamask!", "error");
-
-// }
-// }
-const displayCandidates = async () => {
-  if (WALLET_CONNECTED != 0) {
-      const container = document.getElementById("candidateCards");
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
-      const signer = provider.getSigner();
-      const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
-
-      // Fetch the total number of candidates
-      const totalCandidates = await contractInstance.candidates.length;
-
-      for (let i = 0; i < totalCandidates; i++) {
-          const candidate = await contractInstance.getCandidate(i); // Fetch candidate by index
-
-          // Assuming `candidateIdPhoto` is properly mapped
-          const photoData = candidateIdPhoto.find(photo => photo.id === i);
-
-          if (photoData) {
-              const card = document.createElement("div");
-              card.classList.add("card");
-              card.setAttribute("data_id", i);
-              card.setAttribute("data_name", candidate[0]); // candidate[0] = name
-
-              card.innerHTML = `
-                  <img src="${photoData.photo}" alt="${candidate[0]}">
-                  <h3>${candidate[0]}</h3>
-                  <p>ID: ${i}</p>
-                  <button class="vote-btn" onclick="addVote(${i})">Vote</button>
-              `;
-              container.appendChild(card);
-          }
-      }
-  } else {
-      showToast("Please connect to Metamask first!", "error");
   }
-};
+  else {
+   showToast("Not Connected to Metamask!", "error");
+
+}
+}
+
 
 const getAllCandidates = async() => {
+  
     if(WALLET_CONNECTED != 0) {
+      var table = document.getElementById("myTable");
+      // Clear all rows except the header (if it exists)
+      var rowCount = table.rows.length;
+      for (var i = rowCount - 1; i > 0; i--) {
+          table.deleteRow(i); // Remove rows one by one
+      }
+      toggleCandidateTable();
         var p3 = document.getElementById("p3");
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         await provider.send("eth_requestAccounts", []);
         const signer = provider.getSigner();
         const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
-        //p3.innerHTML = "Please wait, getting all the candidates from the voting smart contract";
+        p3.innerHTML = "Please wait, getting all the candidates from the voting smart contract";
         showToast("Please wait, Fetching the candidates", "info");
 
-        var candidates = await contractInstance.getCandidate();
+        var candidates = await contractInstance.getAllCandidates();
         console.log(candidates);
-        
-
-        var table = document.getElementById("myTable");
-
         for (let i = 0; i < candidates.length; i++) {
             var row = table.insertRow();
             var idCell = row.insertCell();
@@ -240,7 +276,14 @@ const getAllCandidates = async() => {
 
     }
 }
-
+function toggleCandidateTable() {
+  const table = document.getElementById('myTable');
+  // if (table.style.display === 'none') {
+      table.style.display = 'table';
+  // } else {
+  //     table.style.display = 'none';
+  // }
+}
 
 const logout= async () =>{
   // Clear the wallet address from localStorage
@@ -266,7 +309,7 @@ window.onload = function() {
   setActiveMenuItem();
   getContractAbi();
   fetchAndStoreContractAddress();
-  displayCandidates();
+   displayCandidates();
 }
 
 const showToast = (message, type) => {
@@ -303,26 +346,14 @@ const authenticate=async(event)=> {
   }
 }
 
-//Upload candidate photos to IPFS
-// const uploadToIPFS = async (file) => {
-//   try {
-//       const added = await ipfs.add(file);
-//       console.log('IPFS hash:', added.path);
-//       return added.path; // Return the IPFS hash
-//   } catch (error) {
-//       console.error('Error uploading file to IPFS:', error);
-//       return null;
-//   }
-// };
-
 //Add candidate
 const addCandidate = async () => {
     const name = document.getElementById("name").value;
     const age = document.getElementById("age").value;
     const country = document.getElementById("country").value;
     const gender = document.getElementById("gender").value;
-    const photoFile = document.getElementById("photo").files[0]; // Access the uploaded file
-
+    const photoFile = document.getElementById("file").files[0]; // Access the uploaded file
+    try {
     // Upload photo to IPFS
     const photoHash = await uploadToIPFS(photoFile);
 
@@ -335,15 +366,167 @@ const addCandidate = async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
-
+    
     showToast("Adding candidate to blockchain...", "info");
 
-    try {
         const tx = await contractInstance.addCandidate(name, photoHash, age, country, gender);
         await tx.wait();
         showToast("Candidate added successfully!", "success");
+      
     } catch (error) {
         console.error('Error adding candidate:', error);
         showToast("Error adding candidate to blockchain", "error");
     }
 };
+
+//Upload profile picture to IPFS
+const uploadToIPFS = async (file) => {
+  //fetchIPSF();
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const metadata = JSON.stringify({
+      name: file.name,
+  });
+
+  formData.append("pinataMetadata", metadata);
+
+  const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
+
+  try {
+    const responseAPIKey = await fetch('http://localhost:3000/getKey'); // Backend endpoint
+    const data = await responseAPIKey.json();
+    
+    const pinataApiKey = data.pinataApiKey;
+    const pinataApiSecret = data.pinataApiSecret;
+    
+    console.log('API Key:', pinataApiKey); // For testing only, remove in production
+    console.log('API Secret:', pinataApiSecret);
+    
+
+      const response = await axios.post(url, formData, {
+          headers: {
+              'Content-Type': `multipart/form-data`,
+              'pinata_api_key': pinataApiKey,
+              'pinata_secret_api_key': pinataApiSecret,
+          },
+      });
+
+      // Return the IPFS hash (CID) of the uploaded file
+      return response.data.IpfsHash;
+  } catch (error) {
+      console.error("Error uploading file to IPFS:", error);
+      return null;
+  }
+};
+
+
+
+
+// Update Candidate
+async function updateCandidate() {
+  const id = document.getElementById('updateId').value;
+  const name = document.getElementById('updateName').value;
+  const photo = document.getElementById('updatePhoto').value;
+  const age = document.getElementById('updateAge').value;
+  const country = document.getElementById('updateCountry').value;
+  const gender = document.getElementById('updateGender').value;
+
+  try {
+      // Assuming an updateCandidate function is present in the contract
+      const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
+      const tx = await contractInstance.updateCandidate(id, name, photo, age, country, gender);
+      await tx.wait();
+
+      alert('Candidate updated successfully!');
+      closeUpdateDialog();
+  } catch (error) {
+      console.error('Error updating candidate:', error);
+      alert('Failed to update candidate.');
+  }
+}
+
+// Delete Candidate
+const deleteCandidate=async()=> {
+  const id = document.getElementById('deleteId').value;
+
+  try {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+      // Assuming a deleteCandidate function is present in the contract
+      const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
+      const tx = await contractInstance.deleteCandidate(id);
+      await tx.wait();
+      showToast("Candidate deleted successfully!","success")
+      
+      closeDeleteDialog();
+  } catch (error) {
+      console.error(error);
+      showToast("Failed to delete candidate.","error");
+      
+  }
+}
+
+
+
+//End Vote
+const endVote=async()=> {
+  try {
+      // Connect to the smart contract
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+      const votingEndTimestamp = await contract.getRemainingTime();
+      //const time = await contractInstance.getRemainingTime();
+      const currentTime = Math.floor(Date.now() / 1000); // Get current timestamp in seconds
+
+      if (currentTime >= votingEndTimestamp) {
+          showToast("Voting has already ended or hasn't started yet.","warning");
+          return;
+      }
+
+      // Call the endVoting function
+      const tx = await contract.endVoting();
+      await tx.wait(); // Wait for the transaction to be mined
+      showToast("Voting successfully ended!","success")
+  } catch (error) {
+      console.log("Error ending voting:", error);
+      showToast("Failed to end voting. Please try again.","error");
+  }
+}
+
+//Decalare the Winner
+async function getWinner() {
+  try {
+    var status = document.getElementById("status");
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
+      //const winner = await contractInstance.declareWinner();
+      
+      const tx = await contractInstance.declareWinner();
+        console.log("Transaction sent:", tx.hash);
+
+        // Wait for the transaction to be mined
+        const receipt = await tx.wait();
+        showToast("Transaction mining, please wait","info");
+        console.log("Transaction mined:", receipt);
+
+        // Parse the emitted WinnerDeclared event
+        const event = receipt.events.find(event => event.event === "WinnerDeclared");
+        console.log(event);
+        if (event) {
+            const  winnerName=event.args.winnerName;
+            const highestVotes  = event.args.highestVotes.toNumber();
+            status.innerHTML=`<h1>The winner is: ${winnerName} with ${highestVotes} votes!</h1>`;
+        } else {
+            console.log("WinnerDeclared event not found.");
+        }
+
+      // status.innerHTML=` <h2>The winner is: ${winner.toString()}!!"</h3>`;
+      // return winner;
+  } catch (error) {
+    showToast("Error declaring winner","error");
+      console.error("Error declaring winner:", error);
+  }
+}

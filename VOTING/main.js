@@ -4,6 +4,7 @@
 //const axios = require('axios');// IPFS to upload files
 var  WALLET_CONNECTED=localStorage.getItem("Wallet_Connected");
 var contractAddress = localStorage.getItem('contractAddress');
+//var adminContractAddress=localStorage.getItem('adminContractAddress');
 var contractAbi="";
 var candidateIdPhoto = [
   { id:0,photo: "https://via.placeholder.com/100" },
@@ -14,6 +15,7 @@ var candidateIdPhoto = [
 var card="";
 const pinataApiKey="";
 const pinataApiSecret="";
+var flag=0;
 //     console.log('Contract ABI:', config.abi);
 
 //     const config = await response.json();
@@ -23,9 +25,10 @@ const fetchAndStoreContractAddress = async () => {
       const response = await fetch('http://localhost:3000/getContractAddress');
       const data = await response.json();
       const contractAddress = data.contractAddress;
+      const adminContractAddress=data.adminContractAddress;
       // Store the contract address in localStorage
       localStorage.setItem('contractAddress', contractAddress);
-  
+      localStorage.setItem('adminContractAddress',adminContractAddress);
       console.log('Contract Address stored in localStorage:', contractAddress);
     } catch (error) {
       console.error('Error fetching contract address:', error);
@@ -42,6 +45,7 @@ const fetchAndStoreContractAddress = async () => {
   };
   
   async function checkIfAdmin() {
+    try {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
 
@@ -58,6 +62,7 @@ const fetchAndStoreContractAddress = async () => {
           window.location.href = "/adminPage.html";
         }, 1000);
         //return true;
+      
     } else {
         console.log("User is a voter");
         setTimeout(() => {
@@ -68,6 +73,9 @@ const fetchAndStoreContractAddress = async () => {
         
         //return false;
     }
+  }catch(error){
+    console.log(error);
+  }
 }
 
 async function configureUI() {
@@ -117,12 +125,13 @@ async function configureUI() {
   };
   
   //Function to add Vote
-  const addVote = async (selectedName) => {
+  const addVote = async (index) => {
+    try{
     if (WALLET_CONNECTED != 0) {
         // Retrieve the name based on the selected candidate ID
        
 
-        //const candidateName = selectedName; // Assuming the name is stored in `candidateData.name`
+        const candidateName = index; // Assuming the name is stored in `candidateData.name`
 
         // Ethereum and smart contract interaction
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -130,15 +139,15 @@ async function configureUI() {
         const signer = provider.getSigner();
         const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
         const contractEligible = await contractInstance.getRemainingTime();
-        var cand = document.getElementById("cand");
+        //var cand = document.getElementById("cand");
 
         console.log("Remaining time:", contractEligible);
 
         if (contractEligible.toNumber() != 0) {
             
-            showToast("Please wait, adding a vote in the smart contract", "info");
+            showToast("Please wait as your votes are valuable to us!", "info");
             // Pass the candidate name to the smart contract's vote function
-            const tx = await contractInstance.vote(candidateName);
+            const tx = await contractInstance.vote(index);
             await tx.wait();
             
             showToast("Vote added successfully!", "success");
@@ -147,9 +156,20 @@ async function configureUI() {
             showToast("Vote cannot be casted as the voting lines are closed.", "error");
         }
     } else {
-        var cand = document.getElementById("cand");
+        //var cand = document.getElementById("cand");
         showToast("Please connect Metamask first.", "error");
     }
+  }catch(error){
+    if (error.data && error.data.message) {
+      console.error("Revert reason:", error.data.message);
+      showToast("You have already voted. Thank you!","error");
+    }
+   else {
+      console.error("Unhandled error:", error);
+      
+  }
+  }
+
 };
 
 const voteStatus = async() => {
@@ -163,12 +183,12 @@ const voteStatus = async() => {
         const currentStatus = await contractInstance.getVotingStatus();
         const time = await contractInstance.getRemainingTime();
         console.log(time);
-        status.innerHTML = currentStatus == 1 ? "Voting is currently open" : "Voting is finished";
+        status.innerHTML = currentStatus == true ? "Voting is currently open" : "Voting is finished";
         remainingTime.innerHTML = `Remaining time is ${parseInt(time, 16)} seconds`;
-        if(currentStatus!=1){
+        if(currentStatus!= true ){
          await getWinner();
          
-        }
+        } 
     }
     else {
         var status = document.getElementById("status");
@@ -180,6 +200,7 @@ const voteStatus = async() => {
 const displayCandidates = async()=>{
   
   if(WALLET_CONNECTED != 0) {
+    
   //Displaying the details of the voters in the card
   const container = document.getElementById("candidateCards");
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -202,7 +223,7 @@ const displayCandidates = async()=>{
         <img src="${photoUrl}" alt="${candidate.name}">
         <h3>${candidate.name}</h3>
         <p>ID: ${index}</p>
-        <button class="vote-btn" id="voteButton" onclick="addVote('${candidate.name}')">Vote</button>
+        <button class="vote-btn" id="voteButton" onclick="addVote('${index}')">Vote</button>
     `;
     container.appendChild(card);
         }
@@ -268,6 +289,7 @@ function toggleCandidateTable() {
 const logout= async () =>{
   // Clear the wallet address from localStorage
   localStorage.removeItem('Wallet_Connected');
+  localStorage.removeItem('contractAddress');
 
   // Redirect to home page
   window.location.href = "/index.html";
@@ -333,7 +355,7 @@ const addCandidate = async () => {
     const country = document.getElementById("country").value;
     const gender = document.getElementById("gender").value;
     const photoFile = document.getElementById("file").files[0]; // Access the uploaded file
-
+    try {
     // Upload photo to IPFS
     const photoHash = await uploadToIPFS(photoFile);
 
@@ -346,13 +368,17 @@ const addCandidate = async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
-
+    const currentStatus = await contractInstance.getVotingStatus();
+    if(currentStatus==false){
     showToast("Adding candidate to blockchain...", "info");
 
-    try {
         const tx = await contractInstance.addCandidate(name, photoHash, age, country, gender);
         await tx.wait();
         showToast("Candidate added successfully!", "success");
+    }
+    else{
+      showToast("Sorry! the Election has already started");
+    }
     } catch (error) {
         console.error('Error adding candidate:', error);
         showToast("Error adding candidate to blockchain", "error");
@@ -374,8 +400,8 @@ const uploadToIPFS = async (file) => {
   const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
 
   try {
-    const responseAPI = await fetch('http://localhost:3000/getKey'); // Backend endpoint
-    const data = await responseAPI.json();
+    const responseAPIKey = await fetch('http://localhost:3000/getKey'); // Backend endpoint
+    const data = await responseAPIKey.json();
     
     const pinataApiKey = data.pinataApiKey;
     const pinataApiSecret = data.pinataApiSecret;
@@ -418,11 +444,11 @@ async function updateCandidate() {
       const tx = await contractInstance.updateCandidate(id, name, photo, age, country, gender);
       await tx.wait();
 
-      alert('Candidate updated successfully!');
+      showToast('Candidate updated successfully!','success');
       closeUpdateDialog();
   } catch (error) {
       console.error('Error updating candidate:', error);
-      alert('Failed to update candidate.');
+      showToast('Failed to update candidate.','error');
   }
 }
 
@@ -447,6 +473,37 @@ const deleteCandidate=async()=> {
   }
 }
 
+// Function to start voting
+const startVoting=async()=> {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
+  const signer = provider.getSigner();
+  const votingContract = new ethers.Contract(contractAddress, contractAbi, signer);
+
+  try {
+      const tx = await votingContract.startVoting();
+      await tx.wait();
+      showToast("Voting session has started successfully!","success");
+      voteStatus();
+      //updateVotingStatus();
+  } catch (error) {
+      console.error("Error starting the voting session:", error);
+      showToast("Failed to start voting. Please try again.","error");
+  }
+}
+
+// Update voting status display
+const updateVotingStatus=async()=> {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const votingContract = new ethers.Contract(contractAddress, contractAbi, provider);
+
+  try {
+      const isVotingActive = await votingContract.getVotingStatus();
+      document.getElementById("p3").innerText = isVotingActive ? "Voting is active" : "Voting is not active";
+  } catch (error) {
+      console.error("Error fetching voting status:", error);
+  }
+}
 
 //End Vote
 const endVote=async()=> {
@@ -455,10 +512,11 @@ const endVote=async()=> {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-      const votingEndTimestamp = await contract.votingEnd();
-      const currentTime = Math.floor(Date.now() / 1000); // Get current timestamp in seconds
+      const votingEndTimestamp = await contract.getVotingStatus();
+      //const time = await contractInstance.getRemainingTime();
+      //const currentTime = Math.floor(Date.now() / 1000); // Get current timestamp in seconds
 
-      if (currentTime >= votingEndTimestamp) {
+      if (votingEndTimestamp==false) {
           showToast("Voting has already ended or hasn't started yet.","warning");
           return;
       }
@@ -480,10 +538,29 @@ async function getWinner() {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
-      const winner = await contractInstance.declareWinner();
-      alert(`The winner is: ${winner}`);
-      status.innerHTML="The winner is: ${winner}";
-      return winner;
+      //const winner = await contractInstance.declareWinner();
+      
+      const tx = await contractInstance.declareWinner();
+        console.log("Transaction sent:", tx.hash);
+
+        // Wait for the transaction to be mined
+        const receipt = await tx.wait();
+        showToast("Fetching the results of the Election. Please wait for sometime!","info");
+        console.log("Transaction mined:", receipt);
+
+        // Parse the emitted WinnerDeclared event
+        const event = receipt.events.find(event => event.event === "WinnerDeclared");
+        console.log(event);
+        if (event) {
+            const  winnerName=event.args.winnerName;
+            const highestVotes  = event.args.highestVotes.toNumber();
+            status.innerHTML=`<h1>The winner is: ${winnerName} with ${highestVotes} votes!</h1>`;
+        } else {
+            console.log("WinnerDeclared event not found.");
+        }
+
+      // status.innerHTML=` <h2>The winner is: ${winner.toString()}!!"</h3>`;
+      // return winner;
   } catch (error) {
     showToast("Error declaring winner","error");
       console.error("Error declaring winner:", error);

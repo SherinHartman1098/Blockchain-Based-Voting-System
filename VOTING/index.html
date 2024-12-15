@@ -189,13 +189,30 @@
         <a href="/index.html">Vote</a>
         <a href="/ListVoters.html">List Voters</a>
     </div> -->
+    <!-- Help Section at the top of the page -->
+   <!-- Help Section Button -->
+   <!-- <div class="help-section"> -->
+    <button class="help-section" onclick="toggleHelp()">Help?</button>
+<!-- </div> -->
+
+<!-- Instructions Section -->
+<div class="instructions" id="instructions">
+    <h3>To cast your vote, you need to connect your MetaMask wallet:</h3>
+    <ul>
+        <li><strong>Step 1:</strong> Install MetaMask browser extension if you don't have it yet. <a href="https://metamask.io/download/" target="_blank">Click here to download MetaMask.</a></li>
+        <li><strong>Step 2:</strong> Create an account or log in to your existing MetaMask wallet.</li>
+        <li><strong>Step 3:</strong> Once installed and logged in, refresh this page and click "Connect to MetaMask".</li>
+        <li><strong>Step 4:</strong> Follow the on-screen instructions to connect your wallet.</li>
+    </ul>
+    <p>If you encounter any issues or need help, visit <a href="https://metamask.zendesk.com/hc/en-us" target="_blank">MetaMask Help Center</a>.</p>
+</div>
 
     <!-- Main Content -->
     <div class="main-content">
         <div class="header">Welcome to the Decentralized Voting Application</div>
         <div class="sub-header">Empowering secure and transparent voting with blockchain technology.</div>
         <button onclick="connectMetamask()">Connect to Metamask</button>
-        <p id="metamasknotification" style="margin-top: 15px; color: #555;"></p>
+        <p id="metamasknotification" style="margin-top: 15px; color: #fff;"></p>
     </div>
 
     <script>
@@ -234,3 +251,11 @@
     </script>
 </body>
 </html>
+
+<script>
+    function toggleHelp() {
+        const instructions = document.getElementById('instructions');
+        instructions.style.display = instructions.style.display === 'block' ? 'none' : 'block';
+    }
+
+</script>

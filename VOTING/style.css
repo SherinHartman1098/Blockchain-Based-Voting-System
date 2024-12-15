@@ -353,6 +353,11 @@ gap: 0!important;
     justify-content: flex-end; /* Aligns the button to the right */
     margin-bottom: 10px; /* Adds spacing between the button and the candidate list */
 }
+.start-vote-container {
+    display: flex;
+    justify-content: flex-end; /* Aligns the button to the right */
+    margin-bottom: 10px; /* Adds spacing between the button and the candidate list */
+}
 
 #endVoteButton {
     background-color: #e63946;
@@ -368,4 +373,62 @@ gap: 0!important;
 
 #endVoteButton:hover {
     background-color: #d62828;
+}
+#startVoteButton{
+    background-color: #008848;
+    color: white;
+     padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: -15% !important;
+    margin-top: -20% !important;
+} 
+#startVoteButton:hover {
+    background-color: #377d5c;
+}
+
+/* Help Section */
+.help-section {
+    margin-left: 80%;
+    border-radius: 70px;
+    width: 15% !important;
+    width: 30px;
+    background-color: #4b7c7e;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    position: relative;
+    z-index: 999;
+}
+
+.help-section a {
+    color: white;
+    text-decoration: underline;
+}
+.help-section:hover{
+    background-color: #064750;
+}
+/* Instructions Section */
+.instructions {
+    display: none;
+    background-color: #bec9cb;
+    border-radius: 45px;
+    padding: 20px;
+    border-radius: 45px;
+    margin-left: 45%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    font-size: 16px;
+    color: #333;
+    max-width: 600px;
+    text-align: left;
+}
+
+.instructions ul {
+    margin-left: 20px;
+    list-style-type: disc;
 }

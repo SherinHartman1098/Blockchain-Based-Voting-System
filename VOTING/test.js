@@ -1,47 +1,47 @@
-const { create } = require('ipfs-http-client');
+const axios = require('axios');
 const fs = require('fs');
+const path = require('path');
+const FormData = require('form-data');
 
-// Create IPFS client for public gateway
-const ipfs = create({
-    host: 'ipfs.io',
-    port: 5001,
-    protocol: 'https',
-});
+// Pinata API credentials
+const pinataApiKey = '1237d219b13cea007dd6'; // Replace with your actual key
+const pinataApiSecret = 'f99d71d55994856e1dda9b16e1510edb017ede2df1ed09d762a2fb08e3425fd3'; // Replace with your actual secret
 
-// Function to upload a file to IPFS
-async function uploadFile(filePath) {
-    try {
-        const file = fs.readFileSync(filePath); // Read file from the local filesystem
-        const added = await ipfs.add(file); // Add file to IPFS
-        console.log(`File uploaded to IPFS. CID: ${added.path}`);
-        return added.path; // Return the CID
-    } catch (error) {
-        console.error('Error uploading file to IPFS:', error);
-        throw error;
+// Folder containing dummy images
+const imageFolder = path.join(__dirname, '/dummyImages'); // Adjust path as needed
+
+// Function to upload images to IPFS and save CIDs
+const uploadImagesToIPFS = async () => {
+  try {
+    const files = fs.readdirSync(imageFolder); // Read all files in the folder
+    const imageCIDs = {};
+
+    for (const file of files) {
+      const filePath = path.join(imageFolder, file);
+      const formData = new FormData();
+      formData.append('file', fs.createReadStream(filePath)); // Add file to FormData
+
+      // Upload to Pinata
+      const response = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
+        headers: {
+          ...formData.getHeaders(),
+          pinata_api_key: pinataApiKey,
+          pinata_secret_api_key: pinataApiSecret,
+        },
+      });
+
+      const cid = response.data.IpfsHash; // Extract CID from response
+      console.log(`Uploaded: ${file}, CID: ${cid}`);
+      imageCIDs[file] = cid; // Store CID against file name
     }
-}
 
-// Function to retrieve a file from IPFS
-async function retrieveFile(cid) {
-    try {
-        const url = `https://ipfs.io/ipfs/${cid}`; // Use public IPFS gateway
-        console.log(`File accessible at: ${url}`);
-        return url;
-    } catch (error) {
-        console.error('Error retrieving file from IPFS:', error);
-        throw error;
-    }
-}
+    // Save CIDs to a JSON file
+    fs.writeFileSync('./imageCIDs.json', JSON.stringify(imageCIDs, null, 2));
+    console.log('Image CIDs saved to imageCIDs.json!');
+  } catch (error) {
+    console.error('Error uploading images to IPFS:', error);
+  }
+};
 
-// Example Usage
-(async () => {
-    const filePath = './example.jpg'; // Path to the file you want to upload
-
-    // Upload the file
-    const cid = await uploadFile(filePath);
-
-    // Fetch the file URL
-    const fileUrl = await retrieveFile(cid);
-
-    console.log(`File can be accessed at: ${fileUrl}`);
-})();
+// Execute the script
+uploadImagesToIPFS();

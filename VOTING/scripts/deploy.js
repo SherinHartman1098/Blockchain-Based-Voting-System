@@ -8,7 +8,7 @@ async function main() {
 
   // Candidate details
   const names = ["Mark", "Mike"];
-  const photos = ['QmHash1', "QmHash2"];
+  const photos = ['QmdD4toAdx1UE2w3UTNhiTRjmbVQ5PZaRVR6X2avTeTv7Q', "QmbfgA7LaEEro83d3jc9DJM72BYRNH3y9FgQWPX12zLc2y"];
   const ages = [35, 40];
   const countries = ["USA", "Canada"];
   const genders = ["Male", "Male"];
@@ -33,7 +33,7 @@ async function main() {
    const envPath = path.resolve(__dirname, "../.env"); 
    const envContent = fs.readFileSync(envPath, "utf8");
  
-   // Update or add the CONTRACT_ADDRESS key
+   // Update or add the CONTRACT_AD DRESS key
    const updatedEnvContent = envContent.includes("CONTRACT_ADDRESS=")
      ? envContent.replace(/CONTRACT_ADDRESS=.*/, `CONTRACT_ADDRESS="${votingContract.address}"`)
      : `${envContent}\nCONTRACT_ADDRESS="${votingContract.address}"`;

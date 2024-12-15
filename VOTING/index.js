@@ -1,6 +1,7 @@
 
 
 require('dotenv').config();
+const fs = require('fs');
 const express = require('express');
 const app = express();
 const fileUpload = require('express-fileupload');
@@ -27,6 +28,7 @@ app.use(
 const API_URL = process.env.API_URL;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
+const ADMIN_CONTRACT_ADDRESS=process.env.ADMIN_ADDRESS
 const  PINATA_API_KEY=process.env.API_KEY;
 const PINATA_API_SECRET=process.env.API_SECRET;
 
@@ -51,8 +53,11 @@ app.get('/getKey', (req, res) => {
 });
 // API endpoint to get contract address
 app.get('/getContractAddress', (req, res) => {
-    res.json({ contractAddress: CONTRACT_ADDRESS });
+    res.json({ contractAddress: CONTRACT_ADDRESS
+        });
+
   });
+
 
   
   // Endpoint to upload candidate data, including photo
