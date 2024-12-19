@@ -51,7 +51,7 @@ body {
 
 /* Logout Button */
 .navbar .logout {
-    width: 10%!important;
+    width: 80% !important;
     margin-left: auto;
     margin-right: 30px;
     color: white;
@@ -286,8 +286,13 @@ input[type="submit"]:hover {
 
 /* Admin Buttons in Navbar */
 .admin-buttons {
-    display: flex;
-    gap: 10px;
+    width: 15% !important;
+    background-color: #e63a46;
+    border-radius: 30px;
+    margin-right: 70%;
+}
+.admin-buttons:hover{
+    background-color: #f91717 !important;
 }
 
 .nav-button {
@@ -300,6 +305,7 @@ input[type="submit"]:hover {
     font-size: 16px;
     font-weight: bold;
     transition: background-color 0.3s;
+    width: 100% !important;
 }
 
 .nav-button:hover {
@@ -368,7 +374,7 @@ gap: 0!important;
     border-radius: 5px;
     cursor: pointer;
     margin-right: -15%;
-    margin-top: -15%;
+    margin-top: -10%;
 }
 
 #endVoteButton:hover {
@@ -383,7 +389,7 @@ gap: 0!important;
     border-radius: 5px;
     cursor: pointer;
     margin-right: -15% !important;
-    margin-top: -20% !important;
+    margin-top: -15% !important;
 } 
 #startVoteButton:hover {
     background-color: #377d5c;

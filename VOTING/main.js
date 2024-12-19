@@ -174,7 +174,7 @@ async function configureUI() {
 
 const voteStatus = async() => {
     if(WALLET_CONNECTED != 0) {
-        var status = document.getElementById("status");
+      var status = document.getElementById("status");
         var remainingTime = document.getElementById("time");
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         await provider.send("eth_requestAccounts", []);
@@ -183,7 +183,7 @@ const voteStatus = async() => {
         const currentStatus = await contractInstance.getVotingStatus();
         const time = await contractInstance.getRemainingTime();
         console.log(time);
-        status.innerHTML = currentStatus == true ? "Voting is currently open" : "Voting is finished";
+        status.innerHTML = currentStatus == true ? "Voting is currently open" : "Voting is currently not open";
         remainingTime.innerHTML = `Remaining time is ${parseInt(time, 16)} seconds`;
         if(currentStatus!= true ){
          await getWinner();
@@ -191,7 +191,7 @@ const voteStatus = async() => {
         } 
     }
     else {
-        var status = document.getElementById("status");
+        
         showToast("Please connect Metamask first.", "error");
 
     }
@@ -375,6 +375,7 @@ const addCandidate = async () => {
         const tx = await contractInstance.addCandidate(name, photoHash, age, country, gender);
         await tx.wait();
         showToast("Candidate added successfully!", "success");
+        clearFields();
     }
     else{
       showToast("Sorry! the Election has already started");
@@ -384,7 +385,13 @@ const addCandidate = async () => {
         showToast("Error adding candidate to blockchain", "error");
     }
 };
-
+function clearFields(){
+  document.getElementById("name").value="";
+  document.getElementById("age").value="";
+  document.getElementById("country").value="";
+  document.getElementById("gender").value="";
+  document.getElementById("file").value="";
+}
 //Upload profile picture to IPFS
 const uploadToIPFS = async (file) => {
   //fetchIPSF();
