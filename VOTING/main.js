@@ -491,7 +491,7 @@ const startVoting=async()=> {
       const tx = await votingContract.startVoting();
       await tx.wait();
       showToast("Voting session has started successfully!","success");
-      voteStatus();
+      //voteStatus();
       //updateVotingStatus();
   } catch (error) {
       console.error("Error starting the voting session:", error);
