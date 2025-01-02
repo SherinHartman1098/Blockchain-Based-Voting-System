@@ -65,5 +65,5 @@ This decentralized voting system is built as part of a master’s thesis project
     node index.js 
 
 ## **Output** 💻
-![Decentralized Voting System](../Blockchain-Based-Voting-System/VOTING/Images/HomeScreen.png)
+![Decentralized Voting System](Images/HomeScreen.png)
 
